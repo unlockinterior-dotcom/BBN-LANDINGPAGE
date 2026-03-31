@@ -5,6 +5,12 @@
 (function () {
   'use strict';
 
+  /* ---- EmailJS Initialisation ---- */
+  const EMAILJS_SERVICE_ID  = 'service_y679b8o';
+  const EMAILJS_CONTACT_TPL = 'template_taih55y';
+  const EMAILJS_WELCOME_TPL = 'template_0qrr2cs';
+  emailjs.init('BjnEQ1uxyz_GQANV9');
+
   /* ---- Sticky Navbar ---- */
   const navbar = document.getElementById('navbar');
   window.addEventListener('scroll', () => {
@@ -117,42 +123,76 @@
   }
 
   function handleFormSubmit(e) {
-    // Form submits to formsubmit.co — no need to prevent default
-    // Just show loading state
+    e.preventDefault();
+
     const form = e.target;
-    const overlay = form.closest('.form-wrapper')
-      ? form.closest('.form-wrapper').querySelector('.form-overlay')
-      : null;
+    const wrapper = form.closest('.form-wrapper');
+    const overlay = wrapper ? wrapper.querySelector('.form-overlay') : null;
 
-    if (overlay) {
-      overlay.classList.add('show');
-    }
+    // ---- Client-side validation ----
+    const nameField  = form.querySelector('[name="name"]');
+    const phoneField = form.querySelector('[name="phone"]');
 
-    // Validate
-    const name = form.querySelector('[name="name"]');
-    const phone = form.querySelector('[name="phone"]');
-
-    if (!name || name.value.trim().length < 2) {
-      e.preventDefault();
-      if (overlay) overlay.classList.remove('show');
-      showFieldError(name, 'Please enter your full name.');
+    if (!nameField || nameField.value.trim().length < 2) {
+      showFieldError(nameField, 'Please enter your full name.');
       return;
     }
-    if (!phone || !validatePhone(phone.value.trim())) {
-      e.preventDefault();
-      if (overlay) overlay.classList.remove('show');
-      showFieldError(phone, 'Please enter a valid 10-digit mobile number.');
+    if (!phoneField || !validatePhone(phoneField.value.trim())) {
+      showFieldError(phoneField, 'Please enter a valid 10-digit mobile number.');
       return;
     }
 
-    // Let formsubmit.co handle the actual submission
-    // Google Ads conversion tracking
-    // TODO: Replace 'AW-XXXXXXXXX/XXXXXXXXXXXXXXXXXX' with your actual
-    // Google Ads Conversion ID and Label from your Google Ads account
-    // (Google Ads → Tools → Conversions → select conversion → Tag setup)
+    // ---- Show loading overlay ----
+    if (overlay) overlay.classList.add('show');
+
+    // ---- Collect template params ----
+    const getValue = (n) => { const el = form.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ''; };
+
+    const templateParams = {
+      from_name         : getValue('name'),
+      phone             : getValue('phone'),
+      from_email        : getValue('email') || '(not provided)',
+      city              : getValue('city') || '(not provided)',
+      installation_type : getValue('installation_type') || '(not provided)',
+      system_size       : getValue('system_size') || '(not provided)',
+      message           : getValue('message') || '(not provided)',
+      source            : form.getAttribute('aria-label') || 'BBN Landing Page',
+      to_email          : 'unlockinterior@gmail.com',
+      reply_to          : getValue('email') || 'unlockinterior@gmail.com',
+    };
+
+    // ---- Google Ads conversion tracking ----
     if (typeof gtag === 'function') {
       gtag('event', 'conversion', { send_to: 'AW-XXXXXXXXX/XXXXXXXXXXXXXXXXXX' });
     }
+
+    // ---- Send contact-notification email to business ----
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_CONTACT_TPL, templateParams)
+      .then(function () {
+        // ---- Send welcome email to customer (if they gave their email) ----
+        const customerEmail = getValue('email');
+        if (customerEmail) {
+          const welcomeParams = Object.assign({}, templateParams, { to_email: customerEmail });
+          return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_WELCOME_TPL, welcomeParams);
+        }
+      })
+      .then(function () {
+        // ---- Success — redirect to thank-you page ----
+        window.location.href = 'thank-you.html';
+      })
+      .catch(function (err) {
+        if (overlay) overlay.classList.remove('show');
+        console.error('EmailJS error:', err);
+        // Show a user-visible error below the submit button
+        let errBanner = form.querySelector('.ejs-send-error');
+        if (!errBanner) {
+          errBanner = document.createElement('p');
+          errBanner.className = 'ejs-send-error';
+          errBanner.style.cssText = 'color:#e53935;font-size:0.82rem;margin-top:10px;text-align:center;';
+          form.appendChild(errBanner);
+        }
+        errBanner.textContent = '⚠️ Submission failed. Please call us directly at +91-97176-52229 or try again.';
+      });
   }
 
   function validatePhone(phone) {

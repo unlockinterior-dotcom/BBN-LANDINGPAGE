@@ -37,6 +37,9 @@
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -180,20 +183,11 @@
         <p class="form-card-subtitle">Fill in your details — our expert will call you within 30 minutes.</p>
 
         <div class="form-wrapper" style="position:relative;">
-          <!-- formsubmit.co handles delivery to sales2@bbnsolution.com -->
           <form
             id="heroLeadForm"
-            action="https://formsubmit.co/sales2@bbnsolution.com"
-            method="POST"
             novalidate
             aria-label="Solar enquiry form"
           >
-            <!-- formsubmit.co config fields -->
-            <input type="hidden" name="_subject" value="🌞 New Solar Lead — BBN Solutions Landing Page" />
-            <input type="hidden" name="_next" value="https://bbnsolution.com/thank-you.html" />
-            <input type="hidden" name="_captcha" value="false" />
-            <input type="hidden" name="_template" value="table" />
-            <input type="hidden" name="source" value="BBN Landing Page — Hero Form" />
 
             <div class="form-row">
               <div class="form-group">
@@ -969,17 +963,9 @@
         <div class="form-wrapper" style="position:relative;">
           <form
             id="contactLeadForm"
-            action="https://formsubmit.co/sales2@bbnsolution.com"
-            method="POST"
             novalidate
             aria-label="Contact form"
           >
-            <!-- formsubmit.co config -->
-            <input type="hidden" name="_subject" value="🌞 New Solar Lead — BBN Solutions Contact Form" />
-            <input type="hidden" name="_next" value="https://bbnsolution.com/thank-you.html" />
-            <input type="hidden" name="_captcha" value="false" />
-            <input type="hidden" name="_template" value="table" />
-            <input type="hidden" name="source" value="BBN Landing Page — Contact Form" />
 
             <div class="form-row">
               <div class="form-group">
